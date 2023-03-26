@@ -3,6 +3,7 @@
 Plugin Name: dpa-presseportal-to-wordpress
 Description: Fetches data from the presseportal API and creates a new post with the data
 Version: 1.0
+Author: Johannes Pahle
 */
 
 //If this file is called directly, abort.
@@ -35,9 +36,11 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         public function deactivate()
         {
+            // Remove cron
             $next_task = wp_next_scheduled('dpa_cron');
             wp_unschedule_event($next_task, 'dpa_cron');
 
+            // Remove settings
             unregister_setting('dpa', 'dpa');
             delete_option('dpa');
             delete_option('dpa_stats');
@@ -49,6 +52,7 @@ if (!class_exists('presseportal_to_wordpress')) {
         {
             $config = get_option('dpa');
 
+            // Add new schedule
             $schedules['dpa-schedule'] = array(
                 'interval' => $config['dpa_cron_time'] * 60,
                 'display' => 'Every ' . $config['dpa_cron_time'] . ' minutes'
@@ -63,6 +67,7 @@ if (!class_exists('presseportal_to_wordpress')) {
 
             $config = get_option('dpa');
 
+            // Reschedule cron
             $next_task = wp_next_scheduled('dpa_cron');
             if ($config['dpa_active'] === true) {
                 if ($next_task) {
@@ -80,6 +85,7 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         private function register_settings()
         {
+            // Set default settings
             register_setting('dpa', 'dpa', array(
                 'default' => array(
                     'dpa_endpoint' => null,
@@ -93,6 +99,7 @@ if (!class_exists('presseportal_to_wordpress')) {
                 'sanitize_callback' => array($this, 'validate_input')
             ));
 
+            // Set default stats
             add_option('dpa_stats', array(
                 'last_fetch' => '-',
             ));
@@ -100,6 +107,7 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         public function validate_input($input)
         {
+            // Check nonce
             if (
                 !isset($_POST['_wpnonce']) ||
                 !wp_verify_nonce($_POST['_wpnonce'], 'dpa-options')
@@ -107,6 +115,7 @@ if (!class_exists('presseportal_to_wordpress')) {
                 add_settings_error('dpa', 'invalid_nonce', 'Formular-Validierung fehlgeschlagen', 'error');
             }
 
+            // Sanitize input
             $output = array(
                 'dpa_endpoint' => $input['dpa_endpoint'],
                 'dpa_key' => $input['dpa_key'],
@@ -115,7 +124,6 @@ if (!class_exists('presseportal_to_wordpress')) {
                 'dpa_post_type' => $input['dpa_post_type'],
                 'dpa_author' => $input['dpa_author'],
             );
-
             if (!empty($input['dpa_active']) && !empty($output['dpa_endpoint'])) {
                 $output['dpa_active'] = $this->validate_active($input['dpa_active']);
             } else {
@@ -138,7 +146,10 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         function fetchAndPost()
         {
+            // Get config
             $current_config = get_option('dpa');
+
+            // Fetch data from API
             $response = wp_remote_get($current_config['dpa_endpoint'] . '?api_key=' . $current_config['dpa_key'] . '&limit=' . $current_config['dpa_fetch_limit'] . '&lang=de');
             $data = json_decode(wp_remote_retrieve_body($response));
 
