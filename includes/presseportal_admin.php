@@ -1,6 +1,6 @@
 <?php
 
-class AdminPage
+class PresseportalAdminPage
 {
     public function __construct()
     {

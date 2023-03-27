@@ -11,8 +11,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-define('PLUGIN_NAME_VERSION', '1.0');
-
 if (!class_exists('presseportal_to_wordpress')) {
     class presseportal_to_wordpress
     {
@@ -140,8 +138,8 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         private function load_dependencies()
         {
-            require_once plugin_dir_path(__FILE__) . '/includes/admin.php';
-            $this->admin_page = new AdminPage();
+            require_once plugin_dir_path(__FILE__) . '/includes/presseportal_admin.php';
+            $this->admin_page = new PresseportalAdminPage();
         }
 
         function fetchAndPost()
