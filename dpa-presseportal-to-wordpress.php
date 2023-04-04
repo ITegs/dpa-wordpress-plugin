@@ -1,9 +1,10 @@
 <?php
 /*
-Plugin Name: dpa-presseportal-to-wordpress
-Description: Fetches data from the presseportal API and creates a new post with the data
-Version: 1.0
-Author: Johannes Pahle
+ * Plugin Name: dpa-presseportal-to-wordpress
+ * Description: Fetches data from the presseportal API and creates a new post with the data
+ * Version: 1.0
+ * Author: Johannes Pahle
+ * Author URI:   https://github.com/ITegs/dpa-wordpress-plugin
 */
 
 //If this file is called directly, abort.
@@ -164,6 +165,9 @@ if (!class_exists('presseportal_to_wordpress')) {
 
                 // add short link to content
                 $article->body .= '<hr><a href="' . $article->short . '">' . $article->short . '</a>';
+
+                // remove text before ':' in the title
+                $article->title = substr($article->title, strpos($article->title, ':') + 1);
 
                 // Create a new post
                 $post_id = wp_insert_post(array(
