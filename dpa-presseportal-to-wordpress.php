@@ -173,10 +173,6 @@ if (!class_exists('presseportal_to_wordpress')) {
                     continue; // skip if the article has already been posted
                 }
 
-                // add short link to content
-                $article->body .= '<hr><a href="' . $article->short . '">' . $article->short . '</a>';
-
-
                 // add endpoint category to keywords
                 $cat = substr($endpoint, strrpos($endpoint, '/') + 1);
                 $cat = ucfirst($cat);
@@ -185,7 +181,12 @@ if (!class_exists('presseportal_to_wordpress')) {
                 // remove text before ':' in the title (only police reports)
                 if ($cat == 'Police') {
                     $article->title = substr($article->title, strpos($article->title, ':') + 1);
+                    // only use text until 'Rückfragen bitte an:' in the body
+                    $article->body = substr($article->body, 0, strpos($article->body, 'Rückfragen bitte an:'));
                 }
+
+                // add short link to content
+                $article->body .= '<hr><a href="' . $article->short . '">' . $article->short . '</a>';
 
                 // Create a new post
                 $post_id = wp_insert_post(array(
