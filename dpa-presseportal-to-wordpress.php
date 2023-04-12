@@ -149,8 +149,17 @@ if (!class_exists('presseportal_to_wordpress')) {
             // Get config
             $current_config = get_option('dpa');
 
+            $endpoints = preg_split("/\r\n|\n|\r/", $current_config['dpa_endpoint']);
+
+            foreach ($endpoints as $endpoint) {
+                $this->fetchAndPostEndpoint($endpoint, $current_config);
+            }
+        }
+
+        function fetchAndPostEndpoint($endpoint, $current_config)
+        {
             // Fetch data from API
-            $response = wp_remote_get($current_config['dpa_endpoint'] . '?api_key=' . $current_config['dpa_key'] . '&limit=' . $current_config['dpa_fetch_limit'] . '&lang=de');
+            $response = wp_remote_get($endpoint . '?api_key=' . $current_config['dpa_key'] . '&limit=' . $current_config['dpa_fetch_limit'] . '&lang=de');
             $data = json_decode(wp_remote_retrieve_body($response));
 
             $story_array = $data->content;
@@ -167,8 +176,16 @@ if (!class_exists('presseportal_to_wordpress')) {
                 // add short link to content
                 $article->body .= '<hr><a href="' . $article->short . '">' . $article->short . '</a>';
 
-                // remove text before ':' in the title
-                $article->title = substr($article->title, strpos($article->title, ':') + 1);
+
+                // add endpoint category to keywords
+                $cat = substr($endpoint, strrpos($endpoint, '/') + 1);
+                $cat = ucfirst($cat);
+                array_push($article->keywords->keyword, $cat);
+
+                // remove text before ':' in the title (only police reports)
+                if ($cat == 'Police') {
+                    $article->title = substr($article->title, strpos($article->title, ':') + 1);
+                }
 
                 // Create a new post
                 $post_id = wp_insert_post(array(
