@@ -139,6 +139,7 @@ if (!class_exists('presseportal_to_wordpress')) {
 
         private function load_dependencies()
         {
+            require_once ABSPATH . '/wp-admin/includes/taxonomy.php';
             require_once plugin_dir_path(__FILE__) . '/includes/presseportal_admin.php';
             $this->admin_page = new PresseportalAdminPage();
         }
@@ -178,6 +179,20 @@ if (!class_exists('presseportal_to_wordpress')) {
                     'tags_input' => $article->keywords->keyword,
                     'post_status' => $current_config['dpa_post_type'],
                 ));
+
+                // Add the categories
+                if (isset($article->keywords->keyword)) {
+                    $catArray = array();
+                    foreach ($article->keywords->keyword as $category) {
+                        $catId = (int) category_exists($category);
+                        if ($catId == null) {
+                            $catId = wp_create_category($category);
+                        }
+
+                        array_push($catArray, $catId);
+                    }
+                }
+                wp_set_post_categories($post_id, $catArray);
 
                 // Add the featured image
                 if (isset($article->media->image[0]->url)) {
