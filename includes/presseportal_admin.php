@@ -33,7 +33,7 @@ class PresseportalAdminPage
 
         add_settings_field(
             "dpa[dpa_endpoint]",
-            "Endpunkt",
+            "Endpunkt(e) (getrennt durch Zeilenumbruch)",
             array(&$this, "form_endpoint_html"),
             "dpa",
             "dpa-section",
@@ -103,7 +103,7 @@ class PresseportalAdminPage
 
     public function form_endpoint_html($cur_val)
     {
-        echo '<input type="text" name="dpa[dpa_endpoint]" id="dpa_endpoint" value="' . $cur_val . '">';
+        echo '<textarea name="dpa[dpa_endpoint]" id="dpa_endpoint" rows="5" cols="50">' . $cur_val . '</textarea>';
     }
 
     public function form_key_html($cur_val)
