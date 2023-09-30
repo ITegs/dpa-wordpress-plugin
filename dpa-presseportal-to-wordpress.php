@@ -7,6 +7,17 @@
  * Author URI:   https://github.com/ITegs/dpa-wordpress-plugin
 */
 
+// Changes from original plugin:
+// - combined 'API' and 'converter' in one function -> fetching and posting is now done in one step
+// - added feature to set the image as featured
+// - admin page has a few more options
+// - added feature to add endpoint category to keywords
+// - added feature to add the categories
+// - added feature to add short link to content
+// - added feature to remove text before ':' in the title (only police reports)
+// - added feature to only use text until 'Rückfragen bitte an:' in the body
+// - used a different wp_option to store the list of previously posted articles and stats
+
 //If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
@@ -144,7 +155,7 @@ if (!class_exists('presseportal_to_wordpress')) {
             $this->admin_page = new PresseportalAdminPage();
         }
 
-        function fetchAndPost()
+        function fetchAndPost()     // compined 'API' and 'converter' in one function -> fetching and posting is now done in one step
         {
             // Get config
             $current_config = get_option('dpa');
@@ -226,18 +237,22 @@ if (!class_exists('presseportal_to_wordpress')) {
         }
     }
 
-    function Generate_Featured_Image($image_url, $post_id, $article_title)
+    function Generate_Featured_Image($image_url, $post_id, $article_title)      // added feature to set the image as featured
     {
+        // get the necessary stuff
         $upload_dir = wp_upload_dir();
         $image_data = file_get_contents($image_url);
         $fileNameParts = explode('.', $image_url);
         $filename = $article_title . '.' . end($fileNameParts);
+
+        // upload the image to the uploads directory
         if (wp_mkdir_p($upload_dir['path']))
             $file = $upload_dir['path'] . '/' . $filename;
         else
             $file = $upload_dir['basedir'] . '/' . $filename;
         file_put_contents($file, $image_data);
 
+        // attach the image to the post
         $wp_filetype = wp_check_filetype($filename, null);
         $attachment = array(
             'post_mime_type' => $wp_filetype['type'],
